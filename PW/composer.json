@@ -1,0 +1,11 @@
+{
+    "name": "zendframework/zendframework",
+    "description": "Extends Zend_framwork_2",
+    "type": "library",
+    "repositories": [
+
+    ],
+    "require": {
+        
+    },
+}
