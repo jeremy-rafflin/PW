@@ -1,5 +1,5 @@
 <?php
-namespace Pw/RecursiveElement;
+namespace Pw\RecursiveElement;
 //classe d'un élément récurcif
 class RecursiveElement {
 	
@@ -36,31 +36,31 @@ class RecursiveElement {
 	 * @param String $columParentIdName
 	 */
 	public static function setElements($elements = array(), $columIdName, $columParentIdName) {
-		PW_RecursiveElement::$_arrayElement = array();//on réinitialiser le tableau desfois qu'on l'ai déjà utiliser au par avant
+		RecursiveElement::$_arrayElement = array();//on réinitialiser le tableau desfois qu'on l'ai déjà utiliser au par avant
 		
 		self::$_nameId = $columIdName;
 		self::$_nameParentId = $columParentIdName;
 		
+		$id = $columIdName;//pour avoir l'id de l'élément
+		
 		//on liste tous les éléments et on les met dans la liste
 		foreach ($elements as $element) {
-			$elementATrier = new PW_RecursiveElement($element);
-			$id = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
-			PW_RecursiveElement::$_arrayElement[$elementATrier->element->$id] = $elementATrier;
+			$elementATrier = new RecursiveElement($element);
+			RecursiveElement::$_arrayElement[$elementATrier->element->$id] = $elementATrier;
 		}
 		
 		//maintenant on trie le tableau
-		foreach (PW_RecursiveElement::$_arrayElement as $element){
+		foreach (RecursiveElement::$_arrayElement as $element){
 			//si l'id du parent est null c'est un élément de base, on le laisse au 1er niveau sinon on le traite
-			$idParent = PW_RecursiveElement::$_nameParentId;//pour avoir l'id du parent de l'élément
+			$idParent = RecursiveElement::$_nameParentId;//pour avoir l'id du parent de l'élément
 			if($element->element->$idParent != null && $element->element->$idParent != 0 && $element->element->$idParent != '') {
 				//s'il à parent on recherche le parent
-				$parent = PW_RecursiveElement::getElement($element->element->$idParent, PW_RecursiveElement::$_arrayElement);
+				$parent = RecursiveElement::getElement($element->element->$idParent, RecursiveElement::$_arrayElement);
 				//une fois le parent trouvé, on supprime l'élément du 1er niveau et on met qu'il est enfant de son père et qui est son père
 				$element->parent = $parent;
 				$parent->childs[] = $element;
-				unset(PW_RecursiveElement::$_arrayElement [$element->element->$id]);
+				unset(RecursiveElement::$_arrayElement[$element->element->$id]);
 			}
-			
 		}
 	}
 	
@@ -71,13 +71,13 @@ class RecursiveElement {
 	 */
 	private static function getElement($id, &$tabElement) {
 		foreach ($tabElement as $element){
-			$idE = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
+			$idE = RecursiveElement::$_nameId;//pour avoir l'id de l'élément
 			if($element->element->$idE == $id) {//on a trouvé le bon on retourne l'adresse de cette élément
 				return $element;
 			}
 			else {//si on a pas trouvé le bon
 				if (count($element->childs)>0) {//on recherche dans les éléments enfant (s'il en as)
-					$elementTrouver = PW_RecursiveElement::getElement($id, $element->childs);
+					$elementTrouver = RecursiveElement::getElement($id, $element->childs);
 					if($elementTrouver) 
 						return $elementTrouver;
 				}
@@ -92,8 +92,8 @@ class RecursiveElement {
 	 */
 	public static function getElementInArray(&$array, $nameAttributeInArrray, $separatorSousElement ='------') {
 		//pour chaque élément
-		foreach (PW_RecursiveElement::$_arrayElement as $element) {
-			$idE = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
+		$idE = RecursiveElement::$_nameId;//pour avoir l'id de l'élément
+		foreach (RecursiveElement::$_arrayElement as $element) {
 			$array[$element->element->$idE] = $element->element->$nameAttributeInArrray;
 			//si l'élément à des enfant on traite les enfants
 			if (count($element->childs)>0) {
@@ -109,13 +109,12 @@ class RecursiveElement {
 	 * @param String $separatorSousElement
 	 */
 	private static function getChildElementInArray($childsArray, &$array, $nameAttributeInArrray, $separatorSousElement) {
+		$idE = RecursiveElement::$_nameId;//pour avoir l'id de l'élément
 		foreach ($childsArray as $element) {
-			$idE = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
 			$array[$element->element->$idE] = $separatorSousElement.' '.$element->element->$nameAttributeInArrray;
 			//si l'élément à des enfant on traite les enfants
 			if (count($element->childs)>0) {
-				$separatorSousElement.= $separatorSousElement;
-				self::getChildElementInArray($element->childs, $array, $nameAttributeInArrray, $separatorSousElement);
+				self::getChildElementInArray($element->childs, $array, $nameAttributeInArrray, $separatorSousElement.$separatorSousElement);
 			}
 		}
 	}
@@ -125,14 +124,14 @@ class RecursiveElement {
 	 * @param array $array
 	 * @param String $separatorSousElement
 	 */
-	public static function getElementWithNiveauInArray(&$array, $nameAttributeInArrray) {
+	public static function getElementWithNiveauInArray(&$array) {
 		//pour chaque élément
-		foreach (PW_RecursiveElement::$_arrayElement as $element) {
-			$idE = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
+		foreach (RecursiveElement::$_arrayElement as $element) {
+			$idE = RecursiveElement::$_nameId;//pour avoir l'id de l'élément
 			$array[$element->element->$idE] = array('element'=>$element->element, 'niveau'=>0);
 			//si l'élément à des enfant on traite les enfants
 			if (count($element->childs)>0) {
-				self::getChildElementWithNiveauInArray($element->childs, $array, $nameAttributeInArrray, 1);
+				self::getChildElementWithNiveauInArray($element->childs, $array, 1);
 			}
 		}
 	}
@@ -143,14 +142,13 @@ class RecursiveElement {
 	 * @param array $array
 	 * @param String $separatorSousElement
 	 */
-	private static function getChildElementWithNiveauInArray($childsArray, &$array, $nameAttributeInArrray, $niveau) {
+	private static function getChildElementWithNiveauInArray($childsArray, &$array, $niveau) {
 		foreach ($childsArray as $element) {
-			$idE = PW_RecursiveElement::$_nameId;//pour avoir l'id de l'élément
+			$idE = RecursiveElement::$_nameId;//pour avoir l'id de l'élément
 			$array[$element->element->$idE] = array('element'=>$element->element, 'niveau'=>$niveau);
 			//si l'élément à des enfant on traite les enfants
 			if (count($element->childs)>0) {
-				$niveau++;
-				self::getChildElementInArray($element->childs, $array, $nameAttributeInArrray, $niveau);
+				self::getChildElementWithNiveauInArray($element->childs, $array, $niveau+1);
 			}
 		}
 	}
